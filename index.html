@@ -315,31 +315,29 @@ function colFind(cols, names) {
   return null;
 }
 function rowsToRoteiros(cols, rows) {
-  var kId   = colFind(cols, ['#', 'id', 'num']) || cols[0];
-  var kTit  = colFind(cols, ['titulo', 'title']) || cols[1];
-  var kPil  = colFind(cols, ['pilar']) || cols[2];
-  var kHook = colFind(cols, ['hook', 'gancho']) || cols[3];
-  var kRot  = colFind(cols, ['roteiro completo', 'roteiro']) || cols[4];
-  var kTags = colFind(cols, ['hashtags', 'hashtag', 'tag']) || cols[5];
+  var kId   = colFind(cols,['#','id','num']) || cols[0];
+  var kTit  = colFind(cols,['titulo','title']) || cols[1];
+  var kPil  = colFind(cols,['pilar']);
+  var kHook = colFind(cols,['hook','gancho']);
+  var kRot  = colFind(cols,['roteiro']);
+  var kTags = colFind(cols,['hashtag','tag']);
 
   var result = [];
-
   rows.forEach(function(row, idx){
     var titulo = row[kTit] || '';
-    if (!titulo) return;
-
+    if(!titulo) return;
+    var roteiro = row[kRot] || '';
     result.push({
-      id: row[kId] || String(idx + 1),
-      t: titulo,
-      p: row[kPil] || 'Curiosidade',
-      d: '58s',
-      g: row[kHook] || '',
-      roteiro: row[kRot] || '',
-      tags: row[kTags] || '',
-      _new: false
+      id:      row[kId]  || String(idx+1),
+      t:       titulo,
+      p:       row[kPil] || 'Curiosidade',
+      d:       '58s',
+      g:       row[kHook] || '',
+      roteiro: roteiro,
+      tags:    row[kTags] || '',
+      _new:    false
     });
   });
-
   return result;
 }
 
@@ -424,73 +422,28 @@ async function syncSheets() {
 
 // ---------- CSV PARSER ----------
 function csvToRoteiros(text) {
-  var matrix = parseCSV(text);
-  if (!matrix || matrix.length < 2) return [];
-
-  var headerIndex = matrix.findIndex(function(row){
-    var norm = row.map(function(c){
-      return String(c || '').trim().toUpperCase();
-    });
-    return norm.includes('TÍTULO') && norm.includes('ROTEIRO COMPLETO');
-  });
-
-  if (headerIndex === -1) return [];
-
-  var cols = matrix[headerIndex].map(function(c){
-    return String(c || '').trim();
-  });
-
+  var lines = text.trim().split('\n');
+  if(lines.length < 2) return [];
+  var cols = splitCSV(lines[0]).map(function(c){ return c.replace(/^"|"$/g,'').trim(); });
   var rows = [];
-  for (var i = headerIndex + 1; i < matrix.length; i++) {
-    var line = matrix[i];
+  for(var i=1; i<lines.length; i++){
+    var cells = splitCSV(lines[i]);
     var obj = {};
-    cols.forEach(function(col, j){
-      obj[col] = String(line[j] || '').trim();
-    });
+    cols.forEach(function(c,j){ obj[c] = (cells[j]||'').replace(/^"|"$/g,'').trim(); });
     rows.push(obj);
   }
-
   return rowsToRoteiros(cols, rows);
 }
-function parseCSV(text) {
-  var rows = [];
-  var row = [];
-  var cell = '';
-  var inQuotes = false;
-
-  for (var i = 0; i < text.length; i++) {
-    var ch = text[i];
-    var next = text[i + 1];
-
-    if (ch === '"') {
-      if (inQuotes && next === '"') {
-        cell += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (ch === ',' && !inQuotes) {
-      row.push(cell);
-      cell = '';
-    } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
-      if (ch === '\r' && next === '\n') i++;
-      row.push(cell);
-      if (row.some(function(v){ return String(v).trim() !== ''; })) {
-        rows.push(row);
-      }
-      row = [];
-      cell = '';
-    } else {
-      cell += ch;
-    }
+function splitCSV(line) {
+  var result=[], cur='', inQ=false;
+  for(var i=0;i<line.length;i++){
+    var c=line[i];
+    if(c==='"'){ inQ=!inQ; }
+    else if(c===','&&!inQ){ result.push(cur); cur=''; }
+    else{ cur+=c; }
   }
-
-  row.push(cell);
-  if (row.some(function(v){ return String(v).trim() !== ''; })) {
-    rows.push(row);
-  }
-
-  return rows;
+  result.push(cur);
+  return result;
 }
 
 // ---------- AUTH ----------
