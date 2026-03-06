@@ -580,14 +580,12 @@ function renderRows(){
           '</div>'+
           '<div class="sp-body">'+
             '<div class="sp-pane active" data-pane="rot">'+
-              '<div class="sb"><span class="sb-time">⏱ 0 – 4s</span><div class="sb-part">🎣 GANCHO</div><div class="sb-txt">'+(esc(r.s0)||esc(r.g)||'—')+'</div></div>'+
-              '<div class="sp-div"></div>'+
-              '<div class="sb"><span class="sb-time">⏱ 4 – 18s</span><div class="sb-part">📌 CONTEXTO</div><div class="sb-txt">'+(esc(r.s1)||'—')+'</div></div>'+
-              '<div class="sp-div"></div>'+
-              '<div class="sb"><span class="sb-time">⏱ 18 – 45s</span><div class="sb-part">💥 CLÍMAX</div><div class="sb-txt">'+(esc(r.s2)||'—')+'</div></div>'+
-              '<div class="sp-div"></div>'+
-              '<div class="sb"><span class="sb-time">⏱ 45 – '+esc(r.d)+'</span><div class="sb-part">🔚 ENCERRAMENTO</div><div class="sb-txt">'+(esc(r.s3)||'—')+'</div></div>'+
-              (r.cta?'<div class="cta-box"><strong>CTA →</strong> '+esc(r.cta)+'</div>':'')+
+              (function(){
+                var parts = [r.s0||r.g, r.s1, r.s2, r.s3].filter(Boolean).map(esc);
+                var full = parts.join(' ') || '—';
+                return '<div class="sb-txt" style="font-size:15px;line-height:2;padding:18px 20px;border-left:3px solid var(--red);">'+full+'</div>';
+              })()+
+              (r.cta?'<div class="cta-box" style="margin-top:14px;"><strong>CTA →</strong> '+esc(r.cta)+'</div>':'')+
               (tagsHtml?'<div class="tag-row">'+tagsHtml+'</div>':'')+
             '</div>'+
             '<div class="sp-pane" data-pane="ang">'+
