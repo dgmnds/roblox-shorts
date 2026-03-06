@@ -315,16 +315,15 @@ function rowsToRoteiros(cols, rows) {
   var kTit  = colFind(cols,['título','titulo','title']) || cols[1];
   var kPil  = colFind(cols,['pilar']);
   var kDur  = colFind(cols,['duração','duracao','dur']);
-  var kGan  = colFind(cols,['hook','gancho 0','gancho']) ;
-  var kAng  = colFind(cols,['ângulo','angulo','abordagem']);
+  var kGan  = colFind(cols,['hook','gancho']);
+  var kAng  = colFind(cols,['ngulo','abordagem']);
   var kVir  = colFind(cols,['viral','por que']);
-  var kS0   = colFind(cols,['gancho 0','0–4','0-4']);
-  var kS1   = colFind(cols,['contexto','4–18','4-18']);
-  var kS2   = colFind(cols,['clímax','climax','18–45','18-45']);
-  var kS3   = colFind(cols,['encerramento','cta 45','45–']);
-  var kCta  = colFind(cols,['cta final','cta_final']);
+  var kS0   = colFind(cols,['gancho 0','0-4','0–4']);
+  var kS1   = colFind(cols,['contexto','4-18','4–18']);
+  var kS2   = colFind(cols,['climax','cl','18-45','18–45']);
+  var kS3   = colFind(cols,['cta 45','45-58','45–58','encerramento']);
+  var kCta  = colFind(cols,['cta final','coment','cta_final']);
   var kTags = colFind(cols,['hashtag','tag']);
-
   var result = [];
   rows.forEach(function(row, idx){
     var titulo = row[kTit] || '';
