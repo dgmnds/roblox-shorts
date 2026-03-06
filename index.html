@@ -362,20 +362,38 @@ function rowsToRoteiros(cols, rows){
 
 function gvizToRoteiros(raw){
   var data=gvizParse(raw);
-  return rowsToRoteiros(data.cols, data.rows.map(function(obj){
-    return data.cols.map(function(c){ return obj[c]||''; });
-  }));
+  var cols=data.cols;
+  var allRows=data.rows.map(function(obj){
+    return cols.map(function(c){ return obj[c]||''; });
+  });
+  // Se gviz retornou labels genéricos (col0,col1...) significa que a planilha
+  // tem linhas de metadado no topo — precisamos achar o cabeçalho real nas rows
+  function norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
+  var firstNorm = norm(cols[0]);
+  if(firstNorm==='' || firstNorm.match(/^col\d/) || firstNorm==='#' && norm(cols[4]).indexOf('roteiro')<0){
+    // procurar linha que contém "roteiro" ou "titulo"
+    for(var i=0;i<Math.min(allRows.length,8);i++){
+      var joined = allRows[i].join('|').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      if(joined.indexOf('roteiro')>=0 || joined.indexOf('titulo')>=0){
+        cols = allRows[i];
+        allRows = allRows.slice(i+1);
+        break;
+      }
+    }
+  }
+  return rowsToRoteiros(cols, allRows);
 }
 
 function csvToRoteiros(text){
   var all=parseCSV(text);
   if(all.length<2) return [];
-  // Achar linha de cabeçalho (que contém "TÍTULO" ou "ROTEIRO")
+  // Achar linha de cabeçalho: linha que contém "ROTEIRO" ou "TITULO"
   var headerIdx=0;
-  for(var i=0;i<Math.min(all.length,6);i++){
-    var joined=all[i].join('|').toLowerCase();
-    if(joined.indexOf('t')>=0 && joined.indexOf('roteiro')>=0){ headerIdx=i; break; }
-    if(joined.indexOf('titulo')>=0||joined.indexOf('title')>=0){ headerIdx=i; break; }
+  for(var i=0;i<Math.min(all.length,10);i++){
+    var joined=all[i].join('|').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if(joined.indexOf('roteiro')>=0||joined.indexOf('titulo')>=0||joined.indexOf('title')>=0){
+      headerIdx=i; break;
+    }
   }
   var cols=all[headerIdx];
   var rows=all.slice(headerIdx+1);
