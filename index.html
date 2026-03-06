@@ -319,25 +319,26 @@ function rowsToRoteiros(cols, rows) {
   var kTit  = colFind(cols,['titulo','title']) || cols[1];
   var kPil  = colFind(cols,['pilar']);
   var kHook = colFind(cols,['hook','gancho']);
-  var kRot  = colFind(cols,['roteiro']);
-  var kTags = colFind(cols,['hashtag','tag']);
+  var kRot  = colFind(cols,['roteiro completo','roteiro']);
+  var kTags = colFind(cols,['hashtags','hashtag','tag']);
 
   var result = [];
   rows.forEach(function(row, idx){
     var titulo = row[kTit] || '';
     if(!titulo) return;
-    var roteiro = row[kRot] || '';
+
     result.push({
-      id:      row[kId]  || String(idx+1),
-      t:       titulo,
-      p:       row[kPil] || 'Curiosidade',
-      d:       '58s',
-      g:       row[kHook] || '',
-      roteiro: roteiro,
-      tags:    row[kTags] || '',
-      _new:    false
+      id: row[kId] || String(idx + 1),
+      t: titulo,
+      p: row[kPil] || 'Curiosidade',
+      d: '58s',
+      g: row[kHook] || '',
+      roteiro: row[kRot] || '',
+      tags: row[kTags] || '',
+      _new: false
     });
   });
+
   return result;
 }
 
@@ -424,14 +425,30 @@ async function syncSheets() {
 function csvToRoteiros(text) {
   var lines = text.trim().split('\n');
   if(lines.length < 2) return [];
-  var cols = splitCSV(lines[0]).map(function(c){ return c.replace(/^"|"$/g,'').trim(); });
+
+  var headerIndex = lines.findIndex(function(line){
+    var cols = splitCSV(line).map(function(c){
+      return c.replace(/^"|"$/g,'').trim().toUpperCase();
+    });
+    return cols.includes('ROTEIRO COMPLETO') && cols.includes('TÍTULO');
+  });
+
+  if (headerIndex === -1) return [];
+
+  var cols = splitCSV(lines[headerIndex]).map(function(c){
+    return c.replace(/^"|"$/g,'').trim();
+  });
+
   var rows = [];
-  for(var i=1; i<lines.length; i++){
+  for (var i = headerIndex + 1; i < lines.length; i++) {
     var cells = splitCSV(lines[i]);
     var obj = {};
-    cols.forEach(function(c,j){ obj[c] = (cells[j]||'').replace(/^"|"$/g,'').trim(); });
+    cols.forEach(function(c, j){
+      obj[c] = (cells[j] || '').replace(/^"|"$/g,'').trim();
+    });
     rows.push(obj);
   }
+
   return rowsToRoteiros(cols, rows);
 }
 function splitCSV(line) {
