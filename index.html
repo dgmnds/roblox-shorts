@@ -243,8 +243,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 <div class="toast" id="toast"></div>
 
 <script>
-var SHEET_ID = '1S9iJOigJ6Q-aewatWtrJ6yMhCbwdhaga_kD9XAyPRxw';
-var GID = '1678133766';
+var SHEET_ID = '1Ru8mM6-YNX0XbvwEBM66n-yqhwcI71PN/edit?gid=2082888138';
+var GID = '2082888138';
 var CSV_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv&gid=' + GID;
 var GVIZ_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&gid=' + GID;
 
@@ -318,36 +318,24 @@ function rowsToRoteiros(cols, rows) {
   var kId   = colFind(cols,['#','id','num']) || cols[0];
   var kTit  = colFind(cols,['titulo','title']) || cols[1];
   var kPil  = colFind(cols,['pilar']);
-  var kDur  = colFind(cols,['duracao','dur']);
-  var kGan  = colFind(cols,['hook pre','hook']);
-  var kAng  = colFind(cols,['angulo','abordagem']);
-  var kVir  = colFind(cols,['viral','por que']);
-  var kS0   = colFind(cols,['gancho 0']);
-  var kS1   = colFind(cols,['contexto']);
-  var kS2   = colFind(cols,['climax']);
-  var kS3   = colFind(cols,['cta 45','encerramento']);
-  var kCta  = colFind(cols,['cta final']);
+  var kHook = colFind(cols,['hook','gancho']);
+  var kRot  = colFind(cols,['roteiro']);
   var kTags = colFind(cols,['hashtag','tag']);
 
   var result = [];
   rows.forEach(function(row, idx){
     var titulo = row[kTit] || '';
     if(!titulo) return;
+    var roteiro = row[kRot] || '';
     result.push({
-      id:   row[kId]  || String(idx+1),
-      t:    titulo,
-      p:    row[kPil]  || 'Curiosidade',
-      d:    row[kDur]  || '58s',
-      g:    row[kGan]  || '',
-      ang:  row[kAng]  || '',
-      vir:  row[kVir]  || '',
-      s0:   row[kS0]   || row[kGan] || '',
-      s1:   row[kS1]   || '',
-      s2:   row[kS2]   || '',
-      s3:   row[kS3]   || '',
-      cta:  row[kCta]  || '',
-      tags: row[kTags] || '',
-      _new: false
+      id:      row[kId]  || String(idx+1),
+      t:       titulo,
+      p:       row[kPil] || 'Curiosidade',
+      d:       '58s',
+      g:       row[kHook] || '',
+      roteiro: roteiro,
+      tags:    row[kTags] || '',
+      _new:    false
     });
   });
   return result;
@@ -580,18 +568,12 @@ function renderRows(){
           '</div>'+
           '<div class="sp-body">'+
             '<div class="sp-pane active" data-pane="rot">'+
-              (function(){
-                var parts = [r.s0||r.g, r.s1, r.s2, r.s3].filter(Boolean).map(esc);
-                var full = parts.join(' ') || '—';
-                return '<div class="sb-txt" style="font-size:15px;line-height:2;padding:18px 20px;border-left:3px solid var(--red);">'+full+'</div>';
-              })()+
-              (r.cta?'<div class="cta-box" style="margin-top:14px;"><strong>CTA →</strong> '+esc(r.cta)+'</div>':'')+
+              (r.g?'<div class="sb"><div class="sb-part">🎣 HOOK PRÉ-VÍDEO</div><div class="sb-txt" style="font-style:italic;color:#aaa">'+esc(r.g)+'</div></div><div class="sp-div"></div>':'')+
+              '<div class="sb"><div class="sb-part">🎙 ROTEIRO COMPLETO</div><div class="sb-txt" style="white-space:pre-line">'+esc(r.roteiro||'—')+'</div></div>'+
               (tagsHtml?'<div class="tag-row">'+tagsHtml+'</div>':'')+
             '</div>'+
             '<div class="sp-pane" data-pane="ang">'+
-              '<div class="ang-lbl">Ângulo de Abordagem</div><div class="ang-val">'+(esc(r.ang)||'—')+'</div>'+
               '<div class="ang-lbl">Hook pré-vídeo</div><div class="ang-val" style="font-style:italic;color:#888">"'+esc(r.g)+'"</div>'+
-              (r.vir?'<div class="viral-box"><strong>⚡ Por que viraliza:</strong> '+esc(r.vir)+'</div>':'')+
             '</div>'+
           '</div>'+
         '</div>'+
