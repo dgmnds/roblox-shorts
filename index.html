@@ -302,28 +302,33 @@ function gvizParse(raw) {
 }
 
 // ---------- MAP ROW TO ROTEIRO ----------
+function normalize(s) {
+  return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,' ').trim();
+}
 function colFind(cols, names) {
   for(var n=0; n<names.length; n++){
+    var needle = normalize(names[n]);
     for(var i=0; i<cols.length; i++){
-      if(cols[i].toLowerCase().indexOf(names[n].toLowerCase()) >= 0) return cols[i];
+      if(normalize(cols[i]).indexOf(needle) >= 0) return cols[i];
     }
   }
   return null;
 }
 function rowsToRoteiros(cols, rows) {
   var kId   = colFind(cols,['#','id','num']) || cols[0];
-  var kTit  = colFind(cols,['título','titulo','title']) || cols[1];
+  var kTit  = colFind(cols,['titulo','title']) || cols[1];
   var kPil  = colFind(cols,['pilar']);
-  var kDur  = colFind(cols,['duração','duracao','dur']);
-  var kGan  = colFind(cols,['hook','gancho']);
+  var kDur  = colFind(cols,['duracao','dur']);
+  var kGan  = colFind(cols,['hook pre','hook']);
   var kAng  = colFind(cols,['angulo','abordagem']);
   var kVir  = colFind(cols,['viral','por que']);
-  var kS0   = colFind(cols,['gancho 0','0-4','0–4']);
-  var kS1   = colFind(cols,['contexto','4-18','4–18']);
-  var kS2   = colFind(cols,['climax','cl','18-45','18–45']);
-  var kS3   = colFind(cols,['cta 45','45-58','45–58','encerramento']);
-  var kCta  = colFind(cols,['cta final','coment','cta_final']);
+  var kS0   = colFind(cols,['gancho 0']);
+  var kS1   = colFind(cols,['contexto']);
+  var kS2   = colFind(cols,['climax']);
+  var kS3   = colFind(cols,['cta 45','encerramento']);
+  var kCta  = colFind(cols,['cta final']);
   var kTags = colFind(cols,['hashtag','tag']);
+
   var result = [];
   rows.forEach(function(row, idx){
     var titulo = row[kTit] || '';
